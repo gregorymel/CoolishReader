@@ -27,11 +27,29 @@
     },
     "dependencies": {
         "bootstrap": "4.1.1",
-        "jquery": "3.3.1",
-        "express": "latest"
+        "express": "latest",
+        "epubjs": "latest",
+        "jquery": "^3.3.1",
+        "jszip": "^3.1.5",
+        "localforage": "^1.2.10",
+        "rsvp": "^4.8.2",
+        "screenfull": "^3.3.2"
     },
     "devDependencies": {
         "browser-sync": "2.24.5",
-        "gulp": "^3.9.1"
+        "gulp": "^3.9.1",
+        "colors": "~1.2.5",
+        "connect": "~3.6.6",
+        "gh-pages": "^1.1.0",
+        "grunt": "~1.0.2",
+        "grunt-concat-sourcemap": "~0.4.1",
+        "grunt-contrib-concat": "~1.0.1",
+        "grunt-contrib-connect": "~1.0.2",
+        "grunt-contrib-copy": "~1.0.0",
+        "grunt-contrib-jshint": "~1.1.0",
+        "grunt-contrib-uglify": "~3.3.0",
+        "grunt-contrib-watch": "^1.1.0",
+        "optimist": "~0.6.1",
+        "portfinder": "~1.0.13"
     }
 }
