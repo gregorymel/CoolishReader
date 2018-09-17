@@ -20,8 +20,9 @@
             "use strict";
 
             document.onreadystatechange = function () {
+              console.log("READY");
               if (document.readyState == "complete") {
-                window.reader = ePubReader("/books/pg7256.epub", {//"https://s3.amazonaws.com/moby-dick/", {
+                window.reader = ePubReader("https://s3.amazonaws.com/moby-dick/", {
                    restore: true
                  });
               }
@@ -91,7 +92,7 @@
             <a id="bookmark" class="icon-bookmark-empty">Bookmark</a>
             <a id="setting" class="icon-cog">Settings</a>
             <a id="fullscreen" class="icon-resize-full">Fullscreen</a>
-            <a id="setting" class="icon-cog">Return</a>
+            <a href="/" class="icon-cancel-circled">Return</a>
           </div>
         </div>
 

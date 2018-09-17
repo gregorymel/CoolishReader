@@ -6,9 +6,10 @@ var listen = require('./reader/tools/serve.js');
 var path = __dirname + "/";
 
 router.use(express.static('public'));
-router.use(express.static('reader/reader'));
+router.use('/books', express.static('reader/reader'));
 
 router.use(function (req,res,next) {
+  console.log(req.url)
   console.log("/" + req.method);
   next();
 });
@@ -26,7 +27,7 @@ router.get("/contact",function(req,res){
   res.sendFile(path + "contact.html");
 });
 
-router.get("/sleep",function(req,res){
+router.get("/books",function(req,res){
   res.sendFile(path + "reader/reader/reader.html");
 });
 
