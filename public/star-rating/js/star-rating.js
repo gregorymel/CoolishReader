@@ -272,11 +272,11 @@
                 self.$rating.attr('title', $(caption).text());
             }
         },
-        _trigChange: function(params) {
-            var self = this;
-            self._initCaptionTitle();
-            self.$element.trigger('change').trigger('rating:change', params);
-        },
+        // _trigChange: function(params) {
+        //     var self = this;
+        //     self._initCaptionTitle();
+        //     self.$element.trigger('change').trigger('rating:change', params);
+        // },
         _initEvents: function () {
             var self = this;
             self.events = {
@@ -284,16 +284,16 @@
                     var pageX = $h.isEmpty(e.pageX) ? e.originalEvent.touches[0].pageX : e.pageX;
                     return pageX - self.$rating.offset().left;
                 },
-                _listenClick: function (e, callback) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    if (e.handled !== true) {
-                        callback(e);
-                        e.handled = true;
-                    } else {
-                        return false;
-                    }
-                },
+                // _listenClick: function (e, callback) {
+                //     e.stopPropagation();
+                //     e.preventDefault();
+                //     if (e.handled !== true) {
+                //         callback(e);
+                //         e.handled = true;
+                //     } else {
+                //         return false;
+                //     }
+                // },
                 _noMouseAction: function (e) {
                     return !self.hoverEnabled || self.inactive || (e && e.isDefaultPrevented());
                 },
@@ -364,36 +364,36 @@
                     self._toggleHover(out);
                     self.$element.trigger('rating:hoverleave', ['stars']);
                 },
-                clearMouseMove: function (e) {
-                    var caption, val, width, out;
-                    if (self.events._noMouseAction(e) || !self.hoverOnClear) {
-                        return;
-                    }
-                    self.clearClicked = false;
-                    caption = '<span class="' + self.clearCaptionClass + '">' + self.clearCaption + '</span>';
-                    val = self.clearValue;
-                    width = self.getWidthFromValue(val) || 0;
-                    out = {caption: caption, width: width, val: val};
-                    self._toggleHover(out);
-                    self.$element.trigger('rating:hover', [val, caption, 'clear']);
-                },
-                clearMouseLeave: function (e) {
-                    var out;
-                    if (self.events._noMouseAction(e) || self.clearClicked || !self.hoverOnClear) {
-                        return;
-                    }
-                    out = self.cache;
-                    self._toggleHover(out);
-                    self.$element.trigger('rating:hoverleave', ['clear']);
-                },
-                resetForm: function (e) {
-                    if (e && e.isDefaultPrevented()) {
-                        return;
-                    }
-                    if (!self.inactive) {
-                        self.reset();
-                    }
-                }
+                // clearMouseMove: function (e) {
+                //     var caption, val, width, out;
+                //     if (self.events._noMouseAction(e) || !self.hoverOnClear) {
+                //         return;
+                //     }
+                //     self.clearClicked = false;
+                //     caption = '<span class="' + self.clearCaptionClass + '">' + self.clearCaption + '</span>';
+                //     val = self.clearValue;
+                //     width = self.getWidthFromValue(val) || 0;
+                //     out = {caption: caption, width: width, val: val};
+                //     self._toggleHover(out);
+                //     self.$element.trigger('rating:hover', [val, caption, 'clear']);
+                // },
+                // clearMouseLeave: function (e) {
+                //     var out;
+                //     if (self.events._noMouseAction(e) || self.clearClicked || !self.hoverOnClear) {
+                //         return;
+                //     }
+                //     out = self.cache;
+                //     self._toggleHover(out);
+                //     self.$element.trigger('rating:hoverleave', ['clear']);
+                // },
+                // resetForm: function (e) {
+                //     if (e && e.isDefaultPrevented()) {
+                //         return;
+                //     }
+                //     if (!self.inactive) {
+                //         self.reset();
+                //     }
+                // }
             };
         },
         _listen: function () {
