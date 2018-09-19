@@ -141,6 +141,18 @@
           </div>
       </div>
 
+      <style>
+          .modal {
+            width: 300px;
+            height: 300px;
+            position: absolute;
+            left: 50%;
+            top: 50%; 
+            margin-left: -150px;
+            margin-top: -150px;
+          }
+      </style>
+
       <div class="overlay"></div>
       
       <!-- <script src="star-rating/lib/jquery-1.4.4.min.js"></script> -->
@@ -149,6 +161,7 @@
       <script>
           $(function () {
             $('input').ratemate();
+            $('input').hide();
           });
       </script>
 
