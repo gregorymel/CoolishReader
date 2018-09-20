@@ -1,9 +1,34 @@
+function getBookPath()
+{
+	var query = window.location.href.split('?')[1];
+	//query won't be set if ? isn't in the URL
+	if(!query) {
+		return { };
+	}
+
+	var params = query.split('&');
+
+	var pairs = {};
+	for(var i = 0, len = params.length; i < len; i++) {
+		var pair = params[i].split('=');
+		pairs[pair[0]] = pair[1];
+		console.log(pair[1])
+	}
+
+	var res = pairs['bookPath'].split('#');
+
+	return res[0];
+}
+
 EPUBJS.reader.ReaderController = function(book) {
 	var $main = $("#main"),
 			$divider = $("#divider"),
 			$loader = $("#loader"),
 			$next = $("#next"),
-			$prev = $("#prev");
+			$prev = $("#prev"),
+			$voting = $("#votingModal"),
+			$votingSubmit = $("#votingSubmit"),
+			$rate = $("#rate");
 	var reader = this;
 	var book = this.book;
 	var rendition = this.rendition;
@@ -100,13 +125,38 @@ EPUBJS.reader.ReaderController = function(book) {
 
 	document.addEventListener('keydown', arrowKeys, false);
 
-	$next.on("click", function(e){
+	$votingSubmit.on("click", function(e) {
+		var addr = hashCreate(getBookPath());
+		console.log(addr);
+		var value = $rate.val();
+
+		if (!value)
+		{
+			value = 0;
+		}
+
+		var rating = {
+			"rating" : value
+		};
+		var rating_json = JSON.stringify(rating);
+		
+		push_rating(addr, rating_json);
+
+		$voting.removeClass("md-show");
+	});
+
+	$next.on("click", function(e) {
 
 		if(book.package.metadata.direction === "rtl") {
 			rendition.prev();
 		} else {
 			rendition.next();
 		}
+
+		// var curLocation = rendition.currentLocation();
+		// var percent = book.locations.percentageFromCfi(curLocation.start.cfi);
+		// console.log("%d", location.length);
+		//$voting.addClass("md-show");
 
 		e.preventDefault();
 	});
@@ -130,10 +180,20 @@ EPUBJS.reader.ReaderController = function(book) {
 		}
 	});
 
-	rendition.on('relocated', function(location){
+	rendition.on('relocated', function(location) {
+		var total = location.end.displayed.total;
+		var page = location.end.displayed.page;
+
+		if (page == total - 1)
+		{
+			console.log("relocated %d", page);
+			$voting.addClass("md-show");
+		}
+
 		if (location.atStart) {
 			$prev.addClass("disabled");
 		}
+
 		if (location.atEnd) {
 			$next.addClass("disabled");
 		}

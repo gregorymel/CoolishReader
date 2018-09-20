@@ -7,7 +7,7 @@
 		exports["ePub"] = factory(require("xmldom"), (function webpackLoadOptionalExternalModule() { try { return require("jszip"); } catch(e) {} }()));
 	else
 		root["ePub"] = factory(root["xmldom"], root["jszip"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_16__, __WEBPACK_EXTERNAL_MODULE_68__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_16__, __WEBPACK_EXTERNAL_MODULE_68__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -99,6 +99,7 @@ exports.locationOf = locationOf;
 exports.indexOfSorted = indexOfSorted;
 exports.bounds = bounds;
 exports.borders = borders;
+exports.nodeBounds = nodeBounds;
 exports.windowBounds = windowBounds;
 exports.indexOfNode = indexOfNode;
 exports.indexOfTextNode = indexOfTextNode;
@@ -170,6 +171,7 @@ function documentHeight() {
 
 /**
  * Checks if a node is an element
+ * @param {object} obj
  * @returns {boolean}
  * @memberof Core
  */
@@ -178,6 +180,7 @@ function isElement(obj) {
 }
 
 /**
+ * @param {any} n
  * @returns {boolean}
  * @memberof Core
  */
@@ -186,16 +189,27 @@ function isNumber(n) {
 }
 
 /**
+ * @param {any} n
  * @returns {boolean}
  * @memberof Core
  */
 function isFloat(n) {
 	var f = parseFloat(n);
-	return f === n && isNumber(n) && Math.floor(f) !== n;
+
+	if (isNumber(n) === false) {
+		return false;
+	}
+
+	if (typeof n === "string" && n.indexOf(".") > -1) {
+		return true;
+	}
+
+	return Math.floor(f) !== f;
 }
 
 /**
  * Get a prefixed css property
+ * @param {string} unprefixed
  * @returns {string}
  * @memberof Core
  */
@@ -408,6 +422,26 @@ function borders(el) {
 }
 
 /**
+ * Find the bounds of any node
+ * allows for getting bounds of text nodes by wrapping them in a range
+ * @param {node} node
+ * @returns {BoundingClientRect}
+ * @memberof Core
+ */
+function nodeBounds(node) {
+	var elPos = void 0;
+	var doc = node.ownerDocument;
+	if (node.nodeType == Node.TEXT_NODE) {
+		var elRange = doc.createRange();
+		elRange.selectNodeContents(node);
+		elPos = elRange.getBoundingClientRect();
+	} else {
+		elPos = node.getBoundingClientRect();
+	}
+	return elPos;
+}
+
+/**
  * Find the equivelent of getBoundingClientRect of a browser window
  * @returns {{ width: Number, height: Number, top: Number, left: Number, right: Number, bottom: Number }}
  * @memberof Core
@@ -429,7 +463,9 @@ function windowBounds() {
 
 /**
  * Gets the index of a node in its parent
- * @private
+ * @param {Node} node
+ * @param {string} typeId
+ * @return {number} index
  * @memberof Core
  */
 function indexOfNode(node, typeId) {
@@ -619,7 +655,7 @@ function qsa(el, sel) {
  * querySelector by property
  * @param {element} el
  * @param {string} sel selector string
- * @param {props[]} props
+ * @param {object[]} props
  * @returns {element[]} elements
  * @memberof Core
  */
@@ -669,6 +705,13 @@ function sprint(root, func) {
 	}
 }
 
+/**
+ * Create a treeWalker
+ * @memberof Core
+ * @param  {element} root element to start with
+ * @param  {function} func function to run on each element
+ * @param  {function | object} filter funtion or object to filter with
+ */
 function treeWalker(root, func, filter) {
 	var treeWalker = document.createTreeWalker(root, filter, null, false);
 	var node = void 0;
@@ -2063,6 +2106,73 @@ module.exports = exports["default"];
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var EPUBJS_VERSION = exports.EPUBJS_VERSION = "0.3";
+
+// Dom events to listen for
+var DOM_EVENTS = exports.DOM_EVENTS = ["keydown", "keyup", "keypressed", "mouseup", "mousedown", "click", "touchend", "touchstart"];
+
+var EVENTS = exports.EVENTS = {
+  BOOK: {
+    OPEN_FAILED: "openFailed"
+  },
+  CONTENTS: {
+    EXPAND: "expand",
+    RESIZE: "resize",
+    SELECTED: "selected",
+    SELECTED_RANGE: "selectedRange",
+    LINK_CLICKED: "linkClicked"
+  },
+  LOCATIONS: {
+    CHANGED: "changed"
+  },
+  MANAGERS: {
+    RESIZE: "resize",
+    RESIZED: "resized",
+    ORIENTATION_CHANGE: "orientationchange",
+    ADDED: "added",
+    SCROLL: "scroll",
+    SCROLLED: "scrolled"
+  },
+  VIEWS: {
+    AXIS: "axis",
+    LOAD_ERROR: "loaderror",
+    RENDERED: "rendered",
+    RESIZED: "resized",
+    DISPLAYED: "displayed",
+    SHOWN: "shown",
+    HIDDEN: "hidden",
+    MARK_CLICKED: "markClicked"
+  },
+  RENDITION: {
+    STARTED: "started",
+    ATTACHED: "attached",
+    DISPLAYED: "displayed",
+    DISPLAY_ERROR: "displayerror",
+    RENDERED: "rendered",
+    REMOVED: "removed",
+    RESIZED: "resized",
+    ORIENTATION_CHANGE: "orientationchange",
+    LOCATION_CHANGED: "locationChanged",
+    RELOCATED: "relocated",
+    MARK_CLICKED: "markClicked",
+    SELECTED: "selected",
+    LAYOUT: "layout"
+  },
+  LAYOUT: {
+    UPDATED: "updated"
+  }
+};
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
 var d        = __webpack_require__(27)
   , callable = __webpack_require__(41)
 
@@ -2194,71 +2304,6 @@ module.exports = exports = function (o) {
 };
 exports.methods = methods;
 
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-// Dom events to listen for
-var DOM_EVENTS = exports.DOM_EVENTS = ["keydown", "keyup", "keypressed", "mouseup", "mousedown", "click", "touchend", "touchstart"];
-
-var EVENTS = exports.EVENTS = {
-  BOOK: {
-    OPEN_FAILED: "openFailed"
-  },
-  CONTENTS: {
-    EXPAND: "expand",
-    RESIZE: "resize",
-    SELECTED: "selected",
-    SELECTED_RANGE: "selectedRange",
-    LINK_CLICKED: "linkClicked"
-  },
-  LOCATIONS: {
-    CHANGED: "changed"
-  },
-  MANAGERS: {
-    RESIZE: "resize",
-    RESIZED: "resized",
-    ORIENTATION_CHANGE: "orientationchange",
-    ADDED: "added",
-    SCROLL: "scroll",
-    SCROLLED: "scrolled"
-  },
-  VIEWS: {
-    AXIS: "axis",
-    LOAD_ERROR: "loaderror",
-    RENDERED: "rendered",
-    RESIZED: "resized",
-    DISPLAYED: "displayed",
-    SHOWN: "shown",
-    HIDDEN: "hidden",
-    MARK_CLICKED: "markClicked"
-  },
-  RENDITION: {
-    STARTED: "started",
-    ATTACHED: "attached",
-    DISPLAYED: "displayed",
-    DISPLAY_ERROR: "displayerror",
-    RENDERED: "rendered",
-    REMOVED: "removed",
-    RESIZED: "resized",
-    ORIENTATION_CHANGE: "orientationchange",
-    LOCATION_CHANGED: "locationChanged",
-    RELOCATED: "relocated",
-    MARK_CLICKED: "markClicked",
-    SELECTED: "selected",
-    LAYOUT: "layout"
-  },
-  LAYOUT: {
-    UPDATED: "updated"
-  }
-};
 
 /***/ }),
 /* 4 */
@@ -2501,6 +2546,7 @@ var Url = function () {
 
 		/**
    * Resolves a relative path to a absolute url
+   * @param {string} what
    * @returns {string} url
    */
 
@@ -2520,6 +2566,7 @@ var Url = function () {
 
 		/**
    * Resolve a path relative to the url
+   * @param {string} what
    * @returns {string} path
    */
 
@@ -3492,7 +3539,7 @@ function request(url, type, withCredentials, headers) {
 				responseXML = this.responseXML;
 			}
 
-			if (this.status === 200 || responseXML) {
+			if (this.status === 200 || this.status === 0 || responseXML) {
 				//-- Firefox is reporting 0 for blob urls
 				var r;
 
@@ -3765,7 +3812,7 @@ var Queue = function () {
 
 		/**
    * Get the number of tasks in the queue
-   * @return {int} tasks
+   * @return {number} tasks
    */
 
 	}, {
@@ -3852,7 +3899,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -3868,14 +3915,16 @@ var _mapping2 = _interopRequireDefault(_mapping);
 
 var _replacements = __webpack_require__(7);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var isChrome = /Chrome/.test(navigator.userAgent);
-var isWebkit = !isChrome && /AppleWebKit/.test(navigator.userAgent);
+var hasNavigator = typeof navigator !== "undefined";
+
+var isChrome = hasNavigator && /Chrome/.test(navigator.userAgent);
+var isWebkit = hasNavigator && !isChrome && /AppleWebKit/.test(navigator.userAgent);
 
 var ELEMENT_NODE = 1;
 var TEXT_NODE = 3;
@@ -3909,7 +3958,7 @@ var Contents = function () {
 		this.sectionIndex = sectionIndex || 0;
 		this.cfiBase = cfiBase || "";
 
-		this.epubReadingSystem("epub.js", ePub.VERSION);
+		this.epubReadingSystem("epub.js", _constants.EPUBJS_VERSION);
 
 		this.listeners();
 	}
@@ -4022,6 +4071,7 @@ var Contents = function () {
 	}, {
 		key: "textWidth",
 		value: function textWidth() {
+			var rect = void 0;
 			var width = void 0;
 			var range = this.document.createRange();
 			var content = this.content || this.document.body;
@@ -4031,7 +4081,12 @@ var Contents = function () {
 			range.selectNodeContents(content);
 
 			// get the width of the text content
-			width = range.getBoundingClientRect().width;
+			rect = range.getBoundingClientRect();
+			width = rect.width;
+
+			if (this.content === this.document.body && rect.left) {
+				width += rect.left;
+			}
 
 			if (border && border.width) {
 				width += border.width;
@@ -4048,6 +4103,7 @@ var Contents = function () {
 	}, {
 		key: "textHeight",
 		value: function textHeight() {
+			var rect = void 0;
 			var height = void 0;
 			var range = this.document.createRange();
 			var content = this.content || this.document.body;
@@ -4055,7 +4111,12 @@ var Contents = function () {
 
 			range.selectNodeContents(content);
 
-			height = range.getBoundingClientRect().height;
+			rect = range.getBoundingClientRect();
+			height = rect.height;
+
+			if (this.content === this.document.body && rect.top) {
+				height += rect.top;
+			}
 
 			if (height && border.height) {
 				height += border.height;
@@ -4437,9 +4498,15 @@ var Contents = function () {
 			// pass in the target node, as well as the observer options
 			this.observer.observe(this.document, config);
 		}
+
+		/**
+   * Test if images are loaded or add listener for when they load
+   * @private
+   */
+
 	}, {
 		key: "imageLoadListeners",
-		value: function imageLoadListeners(target) {
+		value: function imageLoadListeners() {
 			var images = this.document.querySelectorAll("img");
 			var img;
 			for (var i = 0; i < images.length; i++) {
@@ -4458,7 +4525,7 @@ var Contents = function () {
 
 	}, {
 		key: "fontLoadListeners",
-		value: function fontLoadListeners(target) {
+		value: function fontLoadListeners() {
 			if (!this.document || !this.document.fonts) {
 				return;
 			}
@@ -4915,7 +4982,7 @@ var Contents = function () {
 			if (width >= 0) {
 				this.width(width);
 				viewport.width = width;
-				this.css("padding", "0 " + width / 12 + "px", true);
+				this.css("padding", "0 " + width / 12 + "px");
 			}
 
 			if (height >= 0) {
@@ -4969,9 +5036,15 @@ var Contents = function () {
 			this.css("margin", "0", true);
 
 			if (axis === "vertical") {
-				this.css("padding", gap / 2 + "px 20px", true);
+				this.css("padding-top", gap / 2 + "px", true);
+				this.css("padding-bottom", gap / 2 + "px", true);
+				this.css("padding-left", "20px");
+				this.css("padding-right", "20px");
 			} else {
-				this.css("padding", "20px " + gap / 2 + "px", true);
+				this.css("padding-top", "20px");
+				this.css("padding-bottom", "20px");
+				this.css("padding-left", gap / 2 + "px", true);
+				this.css("padding-right", gap / 2 + "px", true);
 			}
 
 			this.css("box-sizing", "border-box");
@@ -5179,7 +5252,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -5201,7 +5274,7 @@ var _views = __webpack_require__(66);
 
 var _views2 = _interopRequireDefault(_views);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5212,6 +5285,7 @@ var DefaultViewManager = function () {
 		_classCallCheck(this, DefaultViewManager);
 
 		this.name = "default";
+		this.optsSettings = options.settings;
 		this.View = options.view;
 		this.request = options.request;
 		this.renditionQueue = options.queue;
@@ -5224,7 +5298,8 @@ var DefaultViewManager = function () {
 			height: undefined,
 			axis: undefined,
 			flow: "scrolled",
-			ignoreClass: ""
+			ignoreClass: "",
+			fullsize: undefined
 		});
 
 		(0, _core.extend)(this.settings, options.settings || {});
@@ -5248,11 +5323,11 @@ var DefaultViewManager = function () {
 		value: function render(element, size) {
 			var tag = element.tagName;
 
-			if (tag && (tag.toLowerCase() == "body" || tag.toLowerCase() == "html")) {
-				this.fullsize = true;
+			if (typeof this.settings.fullsize === "undefined" && tag && (tag.toLowerCase() == "body" || tag.toLowerCase() == "html")) {
+				this.settings.fullsize = true;
 			}
 
-			if (this.fullsize) {
+			if (this.settings.fullsize) {
 				this.settings.overflow = "visible";
 				this.overflow = this.settings.overflow;
 			}
@@ -5266,7 +5341,7 @@ var DefaultViewManager = function () {
 				overflow: this.overflow,
 				hidden: this.settings.hidden,
 				axis: this.settings.axis,
-				fullsize: this.fullsize,
+				fullsize: this.settings.fullsize,
 				direction: this.settings.direction
 			});
 
@@ -5312,7 +5387,7 @@ var DefaultViewManager = function () {
 				this.destroy();
 			}.bind(this));
 
-			if (!this.fullsize) {
+			if (!this.settings.fullsize) {
 				scroller = this.container;
 			} else {
 				scroller = window;
@@ -5325,7 +5400,7 @@ var DefaultViewManager = function () {
 		value: function removeEventListeners() {
 			var scroller;
 
-			if (!this.fullsize) {
+			if (!this.settings.fullsize) {
 				scroller = this.container;
 			} else {
 				scroller = window;
@@ -5364,7 +5439,9 @@ var DefaultViewManager = function () {
 			    orientation = _window.orientation;
 
 
-			this.resize();
+			if (this.optsSettings.resizeOnOrientationChange) {
+				this.resize();
+			}
 
 			// Per ampproject:
 			// In IOS 10.3, the measured size of an element is incorrect if the
@@ -5374,7 +5451,11 @@ var DefaultViewManager = function () {
 			clearTimeout(this.orientationTimeout);
 			this.orientationTimeout = setTimeout(function () {
 				this.orientationTimeout = undefined;
-				this.resize();
+
+				if (this.optsSettings.resizeOnOrientationChange) {
+					this.resize();
+				}
+
 				this.emit(_constants.EVENTS.MANAGERS.ORIENTATION_CHANGE, orientation);
 			}.bind(this), 500);
 		}
@@ -5781,7 +5862,7 @@ var DefaultViewManager = function () {
 			var offset = 0;
 			var used = 0;
 
-			if (this.fullsize) {
+			if (this.settings.fullsize) {
 				offset = window.scrollY;
 			}
 
@@ -5836,7 +5917,7 @@ var DefaultViewManager = function () {
 			var left = 0;
 			var used = 0;
 
-			if (this.fullsize) {
+			if (this.settings.fullsize) {
 				left = window.scrollX;
 			}
 
@@ -5942,7 +6023,7 @@ var DefaultViewManager = function () {
 				this.ignore = true;
 			}
 
-			if (!this.fullsize) {
+			if (!this.settings.fullsize) {
 				if (x) this.container.scrollLeft += x * dir;
 				if (y) this.container.scrollTop += y;
 			} else {
@@ -5957,7 +6038,7 @@ var DefaultViewManager = function () {
 				this.ignore = true;
 			}
 
-			if (!this.fullsize) {
+			if (!this.settings.fullsize) {
 				this.container.scrollLeft = x;
 				this.container.scrollTop = y;
 			} else {
@@ -5971,7 +6052,7 @@ var DefaultViewManager = function () {
 			var scrollTop = void 0;
 			var scrollLeft = void 0;
 
-			if (!this.fullsize) {
+			if (!this.settings.fullsize) {
 				scrollTop = this.container.scrollTop;
 				scrollLeft = this.container.scrollLeft;
 			} else {
@@ -6409,7 +6490,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 // Default View Managers
 
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -6443,7 +6524,7 @@ var _annotations = __webpack_require__(52);
 
 var _annotations2 = _interopRequireDefault(_annotations);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 var _iframe = __webpack_require__(20);
 
@@ -6477,6 +6558,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @param {string} [options.spread] force spread value
  * @param {number} [options.minSpreadWidth] overridden by spread: none (never) / both (always)
  * @param {string} [options.stylesheet] url of stylesheet to be injected
+ * @param {boolean} [options.resizeOnOrientationChange] false to disable orientation events
  * @param {string} [options.script] url of script to be injected
  */
 var Rendition = function () {
@@ -6494,6 +6576,7 @@ var Rendition = function () {
 			spread: null,
 			minSpreadWidth: 800,
 			stylesheet: null,
+			resizeOnOrientationChange: true,
 			script: null
 		});
 
@@ -6773,10 +6856,9 @@ var Rendition = function () {
 			this.displaying = displaying;
 
 			// Check if this is a book percentage
-			if (this.book.locations.length() && ((0, _core.isFloat)(target) || target === "1.0") // Handle 1.0
-			) {
-					target = this.book.locations.cfiFromPercentage(parseFloat(target));
-				}
+			if (this.book.locations.length() && (0, _core.isFloat)(target)) {
+				target = this.book.locations.cfiFromPercentage(parseFloat(target));
+			}
 
 			section = this.book.spine.get(target);
 
@@ -7351,7 +7433,7 @@ var Rendition = function () {
 		/**
    * Pass the events from a view's Contents
    * @private
-   * @param  {View} view
+   * @param  {Contents} view contents
    */
 
 	}, {
@@ -7460,17 +7542,22 @@ var Rendition = function () {
 				});
 			}
 
+			var computed = contents.window.getComputedStyle(contents.content, null);
+			var height = contents.content.offsetHeight - (parseFloat(computed.paddingTop) + parseFloat(computed.paddingBottom));
+
 			contents.addStylesheetRules({
 				"img": {
 					"max-width": (this._layout.columnWidth ? this._layout.columnWidth + "px" : "100%") + "!important",
-					"max-height": (this._layout.height ? this._layout.height * 0.6 + "px" : "60%") + "!important",
+					"max-height": height + "px" + "!important",
 					"object-fit": "contain",
-					"page-break-inside": "avoid"
+					"page-break-inside": "avoid",
+					"break-inside": "avoid"
 				},
 				"svg": {
 					"max-width": (this._layout.columnWidth ? this._layout.columnWidth + "px" : "100%") + "!important",
-					"max-height": (this._layout.height ? this._layout.height * 0.6 + "px" : "60%") + "!important",
-					"page-break-inside": "avoid"
+					"max-height": height + "px" + "!important",
+					"page-break-inside": "avoid",
+					"break-inside": "avoid"
 				}
 			});
 
@@ -7609,6 +7696,8 @@ var _epubcfi = __webpack_require__(1);
 
 var _epubcfi2 = _interopRequireDefault(_epubcfi);
 
+var _core = __webpack_require__(0);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -7616,6 +7705,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 /**
  * Map text locations to CFI ranges
  * @class
+ * @param {Layout} layout Layout to apply
+ * @param {string} [direction="ltr"] Text direction
+ * @param {string} [axis="horizontal"] vertical or horizontal axis
+ * @param {boolean} [dev] toggle developer highlighting
  */
 var Mapping = function () {
 	function Mapping(layout, direction, axis, dev) {
@@ -7643,6 +7736,10 @@ var Mapping = function () {
 
 		/**
    * Find CFI pairs for a page
+   * @param {Contents} contents Contents from view
+   * @param {string} cfiBase string of the base for a cfi
+   * @param {number} start position to start at
+   * @param {number} end position to end at
    */
 
 	}, {
@@ -7675,6 +7772,15 @@ var Mapping = function () {
 
 			return result;
 		}
+
+		/**
+   * Walk a node, preforming a function on each node it finds
+   * @private
+   * @param {Node} root Node to walkToNode
+   * @param {function} func walk function
+   * @return {*} returns the result of the walk function
+   */
+
 	}, {
 		key: "walk",
 		value: function walk(root, func) {
@@ -7730,6 +7836,16 @@ var Mapping = function () {
 
 			return columns;
 		}
+
+		/**
+   * Find Start Range
+   * @private
+   * @param {Node} root root node
+   * @param {number} start position to start at
+   * @param {number} end position to end at
+   * @return {Range}
+   */
+
 	}, {
 		key: "findStart",
 		value: function findStart(root, start, end) {
@@ -7749,7 +7865,7 @@ var Mapping = function () {
 					var elPos;
 					var elRange;
 
-					elPos = _this.getBounds(node);
+					elPos = (0, _core.nodeBounds)(node);
 
 					if (_this.horizontal && _this.direction === "ltr") {
 
@@ -7801,6 +7917,16 @@ var Mapping = function () {
 			// Return last element
 			return this.findTextStartRange($prev, start, end);
 		}
+
+		/**
+   * Find End Range
+   * @private
+   * @param {Node} root root node
+   * @param {number} start position to start at
+   * @param {number} end position to end at
+   * @return {Range}
+   */
+
 	}, {
 		key: "findEnd",
 		value: function findEnd(root, start, end) {
@@ -7821,7 +7947,7 @@ var Mapping = function () {
 					var elPos;
 					var elRange;
 
-					elPos = _this2.getBounds(node);
+					elPos = (0, _core.nodeBounds)(node);
 
 					if (_this2.horizontal && _this2.direction === "ltr") {
 
@@ -7873,6 +7999,16 @@ var Mapping = function () {
 			// end of chapter
 			return this.findTextEndRange($prev, start, end);
 		}
+
+		/**
+   * Find Text Start Range
+   * @private
+   * @param {Node} root root node
+   * @param {number} start position to start at
+   * @param {number} end position to end at
+   * @return {Range}
+   */
+
 	}, {
 		key: "findTextStartRange",
 		value: function findTextStartRange(node, start, end) {
@@ -7911,6 +8047,16 @@ var Mapping = function () {
 
 			return ranges[0];
 		}
+
+		/**
+   * Find Text End Range
+   * @private
+   * @param {Node} root root node
+   * @param {number} start position to start at
+   * @param {number} end position to end at
+   * @return {Range}
+   */
+
 	}, {
 		key: "findTextEndRange",
 		value: function findTextEndRange(node, start, end) {
@@ -7963,6 +8109,15 @@ var Mapping = function () {
 			// Ends before limit
 			return ranges[ranges.length - 1];
 		}
+
+		/**
+   * Split up a text node into ranges for each word
+   * @private
+   * @param {Node} root root node
+   * @param {string} [_splitter] what to split on
+   * @return {Range[]}
+   */
+
 	}, {
 		key: "splitTextNodeIntoRanges",
 		value: function splitTextNodeIntoRanges(node, _splitter) {
@@ -8009,6 +8164,15 @@ var Mapping = function () {
 
 			return ranges;
 		}
+
+		/**
+   * Turn a pair of ranges into a pair of CFIs
+   * @private
+   * @param {string} cfiBase base string for an EpubCFI
+   * @param {object} rangePair { start: Range, end: Range }
+   * @return {object} { start: "epubcfi(...)", end: "epubcfi(...)" }
+   */
+
 	}, {
 		key: "rangePairToCfiPair",
 		value: function rangePairToCfiPair(cfiBase, rangePair) {
@@ -8041,19 +8205,13 @@ var Mapping = function () {
 
 			return map;
 		}
-	}, {
-		key: "getBounds",
-		value: function getBounds(node) {
-			var elPos = void 0;
-			if (node.nodeType == Node.TEXT_NODE) {
-				var elRange = document.createRange();
-				elRange.selectNodeContents(node);
-				elPos = elRange.getBoundingClientRect();
-			} else {
-				elPos = node.getBoundingClientRect();
-			}
-			return elPos;
-		}
+
+		/**
+   * Set the axis for mapping
+   * @param {string} axis horizontal | vertical
+   * @return {boolean} is it horizontal?
+   */
+
 	}, {
 		key: "axis",
 		value: function axis(_axis) {
@@ -8083,7 +8241,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -8097,7 +8255,7 @@ var _contents = __webpack_require__(13);
 
 var _contents2 = _interopRequireDefault(_contents);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 var _marksPane = __webpack_require__(53);
 
@@ -8587,6 +8745,11 @@ var IframeView = function () {
 
 			if (this.iframe) {
 				this.iframe.style.visibility = "visible";
+
+				// Remind Safari to redraw the iframe
+				this.iframe.style.transform = "translateZ(0)";
+				this.iframe.offsetWidth;
+				this.iframe.style.transform = null;
 			}
 
 			this.emit(_constants.EVENTS.VIEWS.SHOWN, this);
@@ -8657,14 +8820,18 @@ var IframeView = function () {
 	}, {
 		key: "highlight",
 		value: function highlight(cfiRange) {
-			var _this3 = this;
-
 			var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 			var cb = arguments[2];
+
+			var _this3 = this;
+
+			var className = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "epubjs-hl";
+			var styles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
 
 			if (!this.contents) {
 				return;
 			}
+			var attributes = Object.assign({ "fill": "yellow", "fill-opacity": "0.3", "mix-blend-mode": "multiply" }, styles);
 			var range = this.contents.range(cfiRange);
 
 			var emitter = function emitter() {
@@ -8677,12 +8844,12 @@ var IframeView = function () {
 				this.pane = new _marksPane.Pane(this.iframe, this.element);
 			}
 
-			var m = new _marksPane.Highlight(range, "epubjs-hl", data, { 'fill': 'yellow', 'fill-opacity': '0.3', 'mix-blend-mode': 'multiply' });
+			var m = new _marksPane.Highlight(range, className, data, attributes);
 			var h = this.pane.addMark(m);
 
 			this.highlights[cfiRange] = { "mark": h, "element": h.element, "listeners": [emitter, cb] };
 
-			h.element.setAttribute("ref", "epubjs-hl");
+			h.element.setAttribute("ref", className);
 			h.element.addEventListener("click", emitter);
 			h.element.addEventListener("touchstart", emitter);
 
@@ -8695,14 +8862,18 @@ var IframeView = function () {
 	}, {
 		key: "underline",
 		value: function underline(cfiRange) {
-			var _this4 = this;
-
 			var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 			var cb = arguments[2];
+
+			var _this4 = this;
+
+			var className = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "epubjs-ul";
+			var styles = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
 
 			if (!this.contents) {
 				return;
 			}
+			var attributes = Object.assign({ "stroke": "black", "stroke-opacity": "0.3", "mix-blend-mode": "multiply" }, styles);
 			var range = this.contents.range(cfiRange);
 			var emitter = function emitter() {
 				_this4.emit(_constants.EVENTS.VIEWS.MARK_CLICKED, cfiRange, data);
@@ -8714,12 +8885,12 @@ var IframeView = function () {
 				this.pane = new _marksPane.Pane(this.iframe, this.element);
 			}
 
-			var m = new _marksPane.Underline(range, "epubjs-ul", data, { 'stroke': 'black', 'stroke-opacity': '0.3', 'mix-blend-mode': 'multiply' });
+			var m = new _marksPane.Underline(range, className, data, attributes);
 			var h = this.pane.addMark(m);
 
 			this.underlines[cfiRange] = { "mark": h, "element": h.element, "listeners": [emitter, cb] };
 
-			h.element.setAttribute("ref", "epubjs-ul");
+			h.element.setAttribute("ref", className);
 			h.element.addEventListener("click", emitter);
 			h.element.addEventListener("touchstart", emitter);
 
@@ -8789,7 +8960,7 @@ var IframeView = function () {
 				}
 			}
 
-			var mark = this.document.createElement('a');
+			var mark = this.document.createElement("a");
 			mark.setAttribute("ref", "epubjs-mk");
 			mark.style.position = "absolute";
 			mark.style.top = top + "px";
@@ -8891,13 +9062,15 @@ var IframeView = function () {
 				this.stopExpanding = true;
 				this.element.removeChild(this.iframe);
 
-				this.iframe = null;
+				this.iframe = undefined;
+				this.contents = undefined;
 
 				this._textWidth = null;
 				this._textHeight = null;
 				this._width = null;
 				this._height = null;
 			}
+
 			// this.element.style.height = "0px";
 			// this.element.style.width = "0px";
 		}
@@ -9025,9 +9198,11 @@ function debounce(func, wait, options) {
   function remainingWait(time) {
     var timeSinceLastCall = time - lastCallTime,
         timeSinceLastInvoke = time - lastInvokeTime,
-        result = wait - timeSinceLastCall;
+        timeWaiting = wait - timeSinceLastCall;
 
-    return maxing ? nativeMin(result, maxWait - timeSinceLastInvoke) : result;
+    return maxing
+      ? nativeMin(timeWaiting, maxWait - timeSinceLastInvoke)
+      : timeWaiting;
   }
 
   function shouldInvoke(time) {
@@ -9151,7 +9326,7 @@ var _default = __webpack_require__(14);
 
 var _default2 = _interopRequireDefault(_default);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 var _debounce = __webpack_require__(21);
 
@@ -9427,7 +9602,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 			var dir = horizontal && rtl ? -1 : 1; //RTL reverses scrollTop
 
 			var offset = horizontal ? this.scrollLeft : this.scrollTop * dir;
-			var visibleLength = horizontal ? bounds.width : bounds.height;
+			var visibleLength = horizontal ? Math.floor(bounds.width) : bounds.height;
 			var contentLength = horizontal ? this.container.scrollWidth : this.container.scrollHeight;
 
 			var prepend = function prepend() {
@@ -9520,7 +9695,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 			var prevTop;
 			var prevLeft;
 
-			if (this.settings.height) {
+			if (!this.settings.fullsize) {
 				prevTop = this.container.scrollTop;
 				prevLeft = this.container.scrollLeft;
 			} else {
@@ -9536,7 +9711,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 				if (this.settings.axis === "vertical") {
 					this.scrollTo(0, prevTop - bounds.height, true);
 				} else {
-					this.scrollTo(prevLeft - bounds.width, 0, true);
+					this.scrollTo(prevLeft - Math.floor(bounds.width), 0, true);
 				}
 			}
 		}
@@ -9559,7 +9734,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 
 			this.tick = _core.requestAnimationFrame;
 
-			if (this.settings.height) {
+			if (!this.settings.fullsize) {
 				this.prevScrollTop = this.container.scrollTop;
 				this.prevScrollLeft = this.container.scrollLeft;
 			} else {
@@ -9570,7 +9745,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 			this.scrollDeltaVert = 0;
 			this.scrollDeltaHorz = 0;
 
-			if (this.settings.height) {
+			if (!this.settings.fullsize) {
 				scroller = this.container;
 				this.scrollTop = this.container.scrollTop;
 				this.scrollLeft = this.container.scrollLeft;
@@ -9591,7 +9766,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 		value: function removeEventListeners() {
 			var scroller;
 
-			if (this.settings.height) {
+			if (!this.settings.fullsize) {
 				scroller = this.container;
 			} else {
 				scroller = window;
@@ -9606,7 +9781,7 @@ var ContinuousViewManager = function (_DefaultViewManager) {
 			var scrollLeft = void 0;
 			var dir = this.settings.direction === "rtl" ? -1 : 1;
 
-			if (this.settings.height) {
+			if (!this.settings.fullsize) {
 				scrollTop = this.container.scrollTop;
 				scrollLeft = this.container.scrollLeft;
 			} else {
@@ -9775,6 +9950,8 @@ var _core = __webpack_require__(0);
 
 var utils = _interopRequireWildcard(_core);
 
+var _constants = __webpack_require__(2);
+
 __webpack_require__(69);
 
 var _iframe = __webpack_require__(20);
@@ -9804,10 +9981,10 @@ function ePub(url, options) {
   return new _book2.default(url, options);
 }
 
-ePub.VERSION = "0.3";
+ePub.VERSION = _constants.EPUBJS_VERSION;
 
 if (typeof global !== "undefined") {
-  global.EPUBJS_VERSION = ePub.VERSION;
+  global.EPUBJS_VERSION = _constants.EPUBJS_VERSION;
 }
 
 ePub.Book = _book2.default;
@@ -9831,11 +10008,9 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -9893,14 +10068,13 @@ var _epubcfi = __webpack_require__(1);
 
 var _epubcfi2 = _interopRequireDefault(_epubcfi);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var CONTAINER_PATH = "META-INF/container.xml";
-var EPUBJS_VERSION = "0.3";
 
 var INPUT_TYPE = {
 	BINARY: "binary",
@@ -9923,6 +10097,7 @@ var INPUT_TYPE = {
  * @param {string} [options.encoding=binary] optional to pass 'binary' or base64' for archived Epubs
  * @param {string} [options.replacements=none] use base64, blobUrl, or none for replacing assets in archived Epubs
  * @param {method} [options.canonical] optional function to determine canonical urls for a path
+ * @param {string} [options.openAs] optional string to determine the input type
  * @returns {Book}
  * @example new Book("/path/to/book.epub", {})
  * @example new Book({ replacements: "blobUrl" })
@@ -9935,7 +10110,7 @@ var Book = function () {
 		_classCallCheck(this, Book);
 
 		// Allow passing just options to the Book
-		if (typeof options === "undefined" && (typeof url === "undefined" ? "undefined" : _typeof(url)) === "object") {
+		if (typeof options === "undefined" && typeof url !== "string" && url instanceof Blob === false) {
 			options = url;
 			url = undefined;
 		}
@@ -9946,7 +10121,8 @@ var Book = function () {
 			requestHeaders: undefined,
 			encoding: undefined,
 			replacements: undefined,
-			canonical: undefined
+			canonical: undefined,
+			openAs: undefined
 		});
 
 		(0, _core.extend)(this.settings, options);
@@ -10081,7 +10257,7 @@ var Book = function () {
 		// this.toc = undefined;
 
 		if (url) {
-			this.open(url).catch(function (error) {
+			this.open(url, this.settings.openAs).catch(function (error) {
 				var err = new Error("Cannot load book at " + url);
 				_this.emit(_constants.EVENTS.BOOK.OPEN_FAILED, err);
 			});
@@ -10114,7 +10290,7 @@ var Book = function () {
 			} else if (type === INPUT_TYPE.EPUB) {
 				this.archived = true;
 				this.url = new _url2.default("/", "");
-				opening = this.request(input, "binary").then(this.openEpub.bind(this));
+				opening = this.request(input, "binary", this.settings.requestCredentials).then(this.openEpub.bind(this));
 			} else if (type == INPUT_TYPE.OPF) {
 				this.url = new _url2.default(input);
 				opening = this.openPackaging(this.url.Path.toString());
@@ -10560,7 +10736,7 @@ var Book = function () {
 		key: "key",
 		value: function key(identifier) {
 			var ident = identifier || this.package.metadata.identifier || this.url.filename;
-			return "epubjs:" + EPUBJS_VERSION + ":" + ident;
+			return "epubjs:" + _constants.EPUBJS_VERSION + ":" + ident;
 		}
 
 		/**
@@ -10972,8 +11148,9 @@ var Spine = function () {
 
 	/**
   * Unpack items from a opf into spine items
-  * @param  {Package} _package
+  * @param  {Packaging} _package
   * @param  {method} resolver URL resolver
+  * @param  {method} canonical Resolve canonical url
   */
 
 
@@ -11052,7 +11229,7 @@ var Spine = function () {
 
 		/**
    * Get an item from the spine
-   * @param  {string|int} [target]
+   * @param  {string|number} [target]
    * @return {Section} section
    * @example spine.get();
    * @example spine.get(1);
@@ -11168,6 +11345,12 @@ var Spine = function () {
 		value: function each() {
 			return this.spineItems.forEach.apply(this.spineItems, arguments);
 		}
+
+		/**
+   * Find the first Section in the Spine
+   * @return {Section} first section
+   */
+
 	}, {
 		key: "first",
 		value: function first() {
@@ -11182,6 +11365,12 @@ var Spine = function () {
 				index += 1;
 			} while (index < this.spineItems.length);
 		}
+
+		/**
+   * Find the last Section in the Spine
+   * @return {Section} last section
+   */
+
 	}, {
 		key: "last",
 		value: function last() {
@@ -11295,7 +11484,7 @@ var Section = function () {
 
 	/**
   * Load the section from its url
-  * @param  {method} _request a request method to use for loading
+  * @param  {method} [_request] a request method to use for loading
   * @return {document} a promise with the xml document
   */
 
@@ -11340,7 +11529,7 @@ var Section = function () {
 
 		/**
    * Render the contents of a section
-   * @param  {method} _request a request method to use for loading
+   * @param  {method} [_request] a request method to use for loading
    * @return {string} output a serialized XML Document
    */
 
@@ -11439,15 +11628,15 @@ var Section = function () {
 		/**
   * Reconciles the current chapters layout properies with
   * the global layout properities.
-  * @param {object} global  The globa layout settings object, chapter properties string
+  * @param {object} globalLayout  The global layout settings object, chapter properties string
   * @return {object} layoutProperties Object with layout properties
   */
-		value: function reconcileLayoutSettings(global) {
+		value: function reconcileLayoutSettings(globalLayout) {
 			//-- Get the global defaults
 			var settings = {
-				layout: global.layout,
-				spread: global.spread,
-				orientation: global.orientation
+				layout: globalLayout.layout,
+				spread: globalLayout.spread,
+				orientation: globalLayout.orientation
 			};
 
 			//-- Get the chapter's display type
@@ -11551,9 +11740,9 @@ var _epubcfi = __webpack_require__(1);
 
 var _epubcfi2 = _interopRequireDefault(_epubcfi);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -11565,6 +11754,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * Find Locations for a Book
  * @param {Spine} spine
  * @param {request} request
+ * @param {number} [pause=100]
  */
 var Locations = function () {
 	function Locations(spine, request, pause) {
@@ -12141,7 +12331,7 @@ var Packaging = function () {
 		/**
    * Parse Metadata
    * @private
-   * @param  {document} xml
+   * @param  {node} xml
    * @return {object} metadata
    */
 
@@ -12168,6 +12358,7 @@ var Packaging = function () {
 			metadata.orientation = this.getPropertyText(xml, "rendition:orientation");
 			metadata.flow = this.getPropertyText(xml, "rendition:flow");
 			metadata.viewport = this.getPropertyText(xml, "rendition:viewport");
+			metadata.media_active_class = this.getPropertyText(xml, "media:active-class");
 			// metadata.page_prog_dir = packageXml.querySelector("spine").getAttribute("page-progression-direction");
 
 			return metadata;
@@ -12176,7 +12367,7 @@ var Packaging = function () {
 		/**
    * Parse Manifest
    * @private
-   * @param  {document} manifestXml
+   * @param  {node} manifestXml
    * @return {object} manifest
    */
 
@@ -12195,12 +12386,14 @@ var Packaging = function () {
 				var id = item.getAttribute("id"),
 				    href = item.getAttribute("href") || "",
 				    type = item.getAttribute("media-type") || "",
+				    overlay = item.getAttribute("media-overlay") || "",
 				    properties = item.getAttribute("properties") || "";
 
 				manifest[id] = {
 					"href": href,
 					// "url" : href,
 					"type": type,
+					"overlay": overlay,
 					"properties": properties.length ? properties.split(" ") : []
 				};
 			});
@@ -12210,7 +12403,8 @@ var Packaging = function () {
 
 		/**
    * Parse Spine
-   * @param  {document} spineXml
+   * @private
+   * @param  {node} spineXml
    * @param  {Packaging.manifest} manifest
    * @return {object} spine
    */
@@ -12252,6 +12446,8 @@ var Packaging = function () {
 		/**
    * Find TOC NAV
    * @private
+   * @param {element} manifestNode
+   * @return {string}
    */
 
 	}, {
@@ -12268,6 +12464,9 @@ var Packaging = function () {
    * Find TOC NCX
    * media-type="application/x-dtbncx+xml" href="toc.ncx"
    * @private
+   * @param {element} manifestNode
+   * @param {element} spineNode
+   * @return {string}
    */
 
 	}, {
@@ -12295,7 +12494,8 @@ var Packaging = function () {
    * Find the Cover Path
    * <item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml" />
    * Fallback for Epub 2.0
-   * @param  {document} packageXml
+   * @private
+   * @param  {node} packageXml
    * @return {string} href
    */
 
@@ -12325,7 +12525,7 @@ var Packaging = function () {
 		/**
    * Get text of a namespaced element
    * @private
-   * @param  {document} xml
+   * @param  {node} xml
    * @param  {string} tag
    * @return {string} text
    */
@@ -12350,7 +12550,7 @@ var Packaging = function () {
 		/**
    * Get text by property
    * @private
-   * @param  {document} xml
+   * @param  {node} xml
    * @param  {string} property
    * @return {string} text
    */
@@ -12533,7 +12733,7 @@ var Navigation = function () {
 		/**
    * Get an item from the navigation
    * @param  {string} target
-   * @return {object} navItems
+   * @return {object} navItem
    */
 
 	}, {
@@ -12558,7 +12758,7 @@ var Navigation = function () {
    * Get a landmark by type
    * List of types: https://idpf.github.io/epub-vocabs/structure/
    * @param  {string} type
-   * @return {object} landmarkItems
+   * @return {object} landmarkItem
    */
 
 	}, {
@@ -12779,6 +12979,7 @@ var Navigation = function () {
 		/**
    * Load Spine Items
    * @param  {object} json the items to be loaded
+   * @return {Array} navItems
    */
 
 	}, {
@@ -12788,9 +12989,7 @@ var Navigation = function () {
 
 			return json.map(function (item) {
 				item.label = item.title;
-				if (item.children) {
-					item.subitems = _this.load(item.children);
-				}
+				item.subitems = item.children ? _this.load(item.children) : [];
 				return item;
 			});
 		}
@@ -12855,10 +13054,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * Handle Package Resources
  * @class
  * @param {Manifest} manifest
- * @param {[object]} options
- * @param {[string="base64"]} options.replacements
- * @param {[Archive]} options.archive
- * @param {[method]} options.resolver
+ * @param {object} [options]
+ * @param {string} [options.replacements="base64"]
+ * @param {Archive} [options.archive]
+ * @param {method} [options.resolver]
  */
 var Resources = function () {
 	function Resources(manifest, options) {
@@ -12939,6 +13138,13 @@ var Resources = function () {
 				return item.href;
 			});
 		}
+
+		/**
+   * Create a url to a resource
+   * @param {string} url
+   * @return {Promise<string>} Promise resolves with url string
+   */
+
 	}, {
 		key: "createUrl",
 		value: function createUrl(url) {
@@ -13092,7 +13298,7 @@ var Resources = function () {
 		/**
    * Resolve all resources URLs relative to an absolute URL
    * @param  {string} absolute to be resolved to
-   * @param  {[resolver]} resolver
+   * @param  {resolver} [resolver]
    * @return {string[]} array with relative Urls
    */
 
@@ -13247,7 +13453,7 @@ var PageList = function () {
 		/**
    * Parse a Nav PageList
    * @private
-   * @param  {document} navHtml
+   * @param  {node} navHtml
    * @return {PageList.item[]} list
    */
 
@@ -13274,7 +13480,7 @@ var PageList = function () {
 		/**
    * Page List Item
    * @private
-   * @param  {object} item
+   * @param  {node} item
    * @return {object} pageListItem
    */
 
@@ -13331,7 +13537,7 @@ var PageList = function () {
 		/**
    * Get a PageList result from a EpubCFI
    * @param  {string} cfi EpubCFI String
-   * @return {string} page
+   * @return {number} page
    */
 
 	}, {
@@ -13370,7 +13576,7 @@ var PageList = function () {
 
 		/**
    * Get an EpubCFI from a Page List Item
-   * @param  {string} pg
+   * @param  {string | number} pg
    * @return {string} cfi
    */
 
@@ -13396,7 +13602,7 @@ var PageList = function () {
 		/**
    * Get a Page from Book percentage
    * @param  {number} percent
-   * @return {string} page
+   * @return {number} page
    */
 
 	}, {
@@ -13408,7 +13614,7 @@ var PageList = function () {
 
 		/**
    * Returns a value between 0 - 1 corresponding to the location of a page
-   * @param  {int} pg the page
+   * @param  {number} pg the page
    * @return {number} percentage
    */
 
@@ -13432,6 +13638,11 @@ var PageList = function () {
 			var percentage = this.percentageFromPage(pg);
 			return percentage;
 		}
+
+		/**
+   * Destroy
+   */
+
 	}, {
 		key: "destroy",
 		value: function destroy() {
@@ -13467,9 +13678,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _core = __webpack_require__(0);
 
-var _constants = __webpack_require__(3);
+var _constants = __webpack_require__(2);
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -13483,7 +13694,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @param {object} settings
  * @param {string} [settings.layout='reflowable']
  * @param {string} [settings.spread]
- * @param {int} [settings.minSpreadWidth=800]
+ * @param {number} [settings.minSpreadWidth=800]
  * @param {boolean} [settings.evenSpreads=false]
  */
 var Layout = function () {
@@ -13528,6 +13739,7 @@ var Layout = function () {
 	/**
   * Switch the flow between paginated and scrolled
   * @param  {string} flow paginated | scrolled
+  * @return {string} simplified flow
   */
 
 
@@ -13549,8 +13761,9 @@ var Layout = function () {
 		/**
    * Switch between using spreads or not, and set the
    * width at which they switch to single.
-   * @param  {string} spread true | false
-   * @param  {boolean} min integer in pixels
+   * @param  {string} spread "none" | "always" | "auto"
+   * @param  {number} min integer in pixels
+   * @return {boolean} spread true | false
    */
 
 	}, {
@@ -13572,9 +13785,9 @@ var Layout = function () {
 
 		/**
    * Calculate the dimensions of the pagination
-   * @param  {number} _width  [description]
-   * @param  {number} _height [description]
-   * @param  {number} _gap    [description]
+   * @param  {number} _width  width of the rendering
+   * @param  {number} _height height of the rendering
+   * @param  {number} _gap    width of the gap between columns
    */
 
 	}, {
@@ -13718,6 +13931,13 @@ var Layout = function () {
 				pages: pages
 			};
 		}
+
+		/**
+   * Update props that have changed
+   * @private
+   * @param  {object} props
+   */
+
 	}, {
 		key: "update",
 		value: function update(props) {
@@ -13841,6 +14061,12 @@ var Themes = function () {
 				return this.registerRules("default", theme);
 			}
 		}
+
+		/**
+   * Register themes object
+   * @param {object} themes
+   */
+
 	}, {
 		key: "registerThemes",
 		value: function registerThemes(themes) {
@@ -13854,6 +14080,13 @@ var Themes = function () {
 				}
 			}
 		}
+
+		/**
+   * Register a url
+   * @param {string} name
+   * @param {string} input
+   */
+
 	}, {
 		key: "registerUrl",
 		value: function registerUrl(name, input) {
@@ -13863,6 +14096,13 @@ var Themes = function () {
 				this.update(name);
 			}
 		}
+
+		/**
+   * Register rule
+   * @param {string} name
+   * @param {object} rules
+   */
+
 	}, {
 		key: "registerRules",
 		value: function registerRules(name, rules) {
@@ -13872,6 +14112,12 @@ var Themes = function () {
 				this.update(name);
 			}
 		}
+
+		/**
+   * Select a theme
+   * @param {string} name
+   */
+
 	}, {
 		key: "select",
 		value: function select(name) {
@@ -13887,6 +14133,12 @@ var Themes = function () {
 				content.addClass(name);
 			});
 		}
+
+		/**
+   * Update a theme
+   * @param {string} name
+   */
+
 	}, {
 		key: "update",
 		value: function update(name) {
@@ -13897,6 +14149,12 @@ var Themes = function () {
 				_this.add(name, content);
 			});
 		}
+
+		/**
+   * Inject all themes into contents
+   * @param {Contents} contents
+   */
+
 	}, {
 		key: "inject",
 		value: function inject(contents) {
@@ -13918,6 +14176,13 @@ var Themes = function () {
 				contents.addClass(this._current);
 			}
 		}
+
+		/**
+   * Add Theme to contents
+   * @param {string} name
+   * @param {Contents} contents
+   */
+
 	}, {
 		key: "add",
 		value: function add(name, contents) {
@@ -13936,19 +14201,36 @@ var Themes = function () {
 				theme.injected = true;
 			}
 		}
+
+		/**
+   * Add override
+   * @param {string} name
+   * @param {string} value
+   * @param {boolean} priority
+   */
+
 	}, {
 		key: "override",
-		value: function override(name, value) {
+		value: function override(name, value, priority) {
 			var _this2 = this;
 
 			var contents = this.rendition.getContents();
 
-			this._overrides[name] = value;
+			this._overrides[name] = {
+				value: value,
+				priority: priority === true
+			};
 
 			contents.forEach(function (content) {
-				content.css(name, _this2._overrides[name]);
+				content.css(name, _this2._overrides[name].value, _this2._overrides[name].priority);
 			});
 		}
+
+		/**
+   * Add all overrides
+   * @param {Content} content
+   */
+
 	}, {
 		key: "overrides",
 		value: function overrides(contents) {
@@ -13956,7 +14238,7 @@ var Themes = function () {
 
 			for (var rule in overrides) {
 				if (overrides.hasOwnProperty(rule)) {
-					contents.css(rule, overrides[rule]);
+					contents.css(rule, overrides[rule].value, overrides[rule].priority);
 				}
 			}
 		}
@@ -13980,7 +14262,7 @@ var Themes = function () {
 	}, {
 		key: "font",
 		value: function font(f) {
-			this.override("font-family", f);
+			this.override("font-family", f, true);
 		}
 	}, {
 		key: "destroy",
@@ -14012,7 +14294,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _eventEmitter = __webpack_require__(2);
+var _eventEmitter = __webpack_require__(3);
 
 var _eventEmitter2 = _interopRequireDefault(_eventEmitter);
 
@@ -14050,13 +14332,15 @@ var Annotations = function () {
   * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
   * @param {object} data Data to assign to annotation
   * @param {function} [cb] Callback after annotation is added
+  * @param {string} className CSS class to assign to annotation
+  * @param {object} styles CSS styles to assign to annotation
   * @returns {Annotation} annotation
   */
 
 
 	_createClass(Annotations, [{
 		key: "add",
-		value: function add(type, cfiRange, data, cb) {
+		value: function add(type, cfiRange, data, cb, className, styles) {
 			var hash = encodeURI(cfiRange);
 			var cfi = new _epubcfi2.default(cfiRange);
 			var sectionIndex = cfi.spinePos;
@@ -14065,7 +14349,9 @@ var Annotations = function () {
 				cfiRange: cfiRange,
 				data: data,
 				sectionIndex: sectionIndex,
-				cb: cb
+				cb: cb,
+				className: className,
+				styles: styles
 			});
 
 			this._annotations[hash] = annotation;
@@ -14148,12 +14434,14 @@ var Annotations = function () {
    * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
    * @param {object} data Data to assign to annotation
    * @param {function} cb Callback after annotation is added
+   * @param {string} className CSS class to assign to annotation
+   * @param {object} styles CSS styles to assign to annotation
    */
 
 	}, {
 		key: "highlight",
-		value: function highlight(cfiRange, data, cb) {
-			this.add("highlight", cfiRange, data, cb);
+		value: function highlight(cfiRange, data, cb, className, styles) {
+			this.add("highlight", cfiRange, data, cb, className, styles);
 		}
 
 		/**
@@ -14161,12 +14449,14 @@ var Annotations = function () {
    * @param {EpubCFI} cfiRange EpubCFI range to attach annotation to
    * @param {object} data Data to assign to annotation
    * @param {function} cb Callback after annotation is added
+   * @param {string} className CSS class to assign to annotation
+   * @param {object} styles CSS styles to assign to annotation
    */
 
 	}, {
 		key: "underline",
-		value: function underline(cfiRange, data, cb) {
-			this.add("underline", cfiRange, data, cb);
+		value: function underline(cfiRange, data, cb, className, styles) {
+			this.add("underline", cfiRange, data, cb, className, styles);
 		}
 
 		/**
@@ -14265,6 +14555,8 @@ var Annotations = function () {
  * @param {object} options.data Data to assign to annotation
  * @param {int} options.sectionIndex Index in the Spine of the Section annotation belongs to
  * @param {function} [options.cb] Callback after annotation is added
+ * @param {string} className CSS class to assign to annotation
+ * @param {object} styles CSS styles to assign to annotation
  * @returns {Annotation} annotation
  */
 
@@ -14275,7 +14567,9 @@ var Annotation = function () {
 		    cfiRange = _ref.cfiRange,
 		    data = _ref.data,
 		    sectionIndex = _ref.sectionIndex,
-		    cb = _ref.cb;
+		    cb = _ref.cb,
+		    className = _ref.className,
+		    styles = _ref.styles;
 
 		_classCallCheck(this, Annotation);
 
@@ -14285,6 +14579,8 @@ var Annotation = function () {
 		this.sectionIndex = sectionIndex;
 		this.mark = undefined;
 		this.cb = cb;
+		this.className = className;
+		this.styles = styles;
 	}
 
 	/**
@@ -14311,14 +14607,16 @@ var Annotation = function () {
 			    data = this.data,
 			    type = this.type,
 			    mark = this.mark,
-			    cb = this.cb;
+			    cb = this.cb,
+			    className = this.className,
+			    styles = this.styles;
 
 			var result = void 0;
 
 			if (type === "highlight") {
-				result = view.highlight(cfiRange, data, cb);
+				result = view.highlight(cfiRange, data, cb, className, styles);
 			} else if (type === "underline") {
-				result = view.underline(cfiRange, data, cb);
+				result = view.underline(cfiRange, data, cb, className, styles);
 			} else if (type === "mark") {
 				result = view.mark(cfiRange, data, cb);
 			}
@@ -14727,10 +15025,10 @@ function coords(el, container) {
 }
 
 function setCoords(el, coords) {
-    el.style.top = coords.top + 'px';
-    el.style.left = coords.left + 'px';
-    el.style.height = coords.height + 'px';
-    el.style.width = coords.width + 'px';
+    el.style.setProperty('top', coords.top + 'px', 'important');
+    el.style.setProperty('left', coords.left + 'px', 'important');
+    el.style.setProperty('height', coords.height + 'px', 'important');
+    el.style.setProperty('width', coords.width + 'px', 'important');
 }
 
 function contains(rect1, rect2) {
@@ -15079,8 +15377,14 @@ var Stage = function () {
 				bounds = this.element.getBoundingClientRect();
 
 				if (bounds.width) {
-					width = bounds.width;
-					this.container.style.width = bounds.width + "px";
+					width = Math.floor(bounds.width);
+					this.container.style.width = width + "px";
+				}
+			} else {
+				if ((0, _core.isNumber)(width)) {
+					this.container.style.width = width + "px";
+				} else {
+					this.container.style.width = width;
 				}
 			}
 
@@ -15089,13 +15393,19 @@ var Stage = function () {
 
 				if (bounds.height) {
 					height = bounds.height;
-					this.container.style.height = bounds.height + "px";
+					this.container.style.height = height + "px";
+				}
+			} else {
+				if ((0, _core.isNumber)(height)) {
+					this.container.style.height = height + "px";
+				} else {
+					this.container.style.height = height;
 				}
 			}
 
 			if (!(0, _core.isNumber)(width)) {
 				bounds = this.container.getBoundingClientRect();
-				width = bounds.width;
+				width = Math.floor(bounds.width);
 				//height = bounds.height;
 			}
 
@@ -15116,11 +15426,19 @@ var Stage = function () {
 
 			// Bounds not set, get them from window
 			var _windowBounds = (0, _core.windowBounds)();
+			var bodyStyles = window.getComputedStyle(document.body);
+			var bodyPadding = {
+				left: parseFloat(bodyStyles["padding-left"]) || 0,
+				right: parseFloat(bodyStyles["padding-right"]) || 0,
+				top: parseFloat(bodyStyles["padding-top"]) || 0,
+				bottom: parseFloat(bodyStyles["padding-bottom"]) || 0
+			};
+
 			if (!width) {
-				width = _windowBounds.width;
+				width = _windowBounds.width - bodyPadding.left - bodyPadding.right;
 			}
-			if (this.settings.fullsize || !height) {
-				height = _windowBounds.height;
+			if (this.settings.fullsize && !height || !height) {
+				height = _windowBounds.height - bodyPadding.top - bodyPadding.bottom;
 			}
 
 			return {
@@ -15884,7 +16202,7 @@ var Archive = function () {
 		/**
    * Open an archive
    * @param  {binary} input
-   * @param  {boolean} isBase64 tells JSZip if the input data is base64 encoded
+   * @param  {boolean} [isBase64] tells JSZip if the input data is base64 encoded
    * @return {Promise} zipfile
    */
 
@@ -15897,7 +16215,7 @@ var Archive = function () {
 		/**
    * Load and Open an archive
    * @param  {string} zipUrl
-   * @param  {boolean} isBase64 tells JSZip if the input data is base64 encoded
+   * @param  {boolean} [isBase64] tells JSZip if the input data is base64 encoded
    * @return {Promise} zipfile
    */
 
@@ -15913,7 +16231,7 @@ var Archive = function () {
    * Request a url from the archive
    * @param  {string} url  a url to request from the archive
    * @param  {string} [type] specify the type of the returned result
-   * @return {Promise}
+   * @return {Promise<Blob | string | JSON | Document | XMLDocument>}
    */
 
 	}, {

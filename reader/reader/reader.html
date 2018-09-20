@@ -12,6 +12,15 @@
         <link rel="stylesheet" href="css/main.css">
         <link rel="stylesheet" href="css/popup.css">
 
+        <style>
+            .ratemate.control { cursor: pointer; }
+        </style>
+
+        <!--Start-rating CSS-->
+        <!-- <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+        <link href="star-rating/css/star-rating.css" media="all" rel="stylesheet" type="text/css"/> -->
+
         <script src="js/libs/jquery.min.js"></script>
 
         <script src="js/libs/zip.min.js"></script>
@@ -114,6 +123,34 @@
               <div class="closer icon-cancel-circled"></div>
           </div>
       </div>
+
+      <div class="modal fade" id="votingModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title">Rate book</h4>
+                </div>
+                <div class="modal-body">
+                    <input id="rate" max="5.0" min="0.0" name="rating" type="range" value="0.0">
+                    <!-- <input id="rate" class="rating" data-stars="5" data-step="1" title="" data-size="sm"> -->
+                </div>
+              <div class="modal-footer">
+                 <button id="votingSubmit" type="button" class="btn btn-white">Submit</button>
+              </div>
+            </div>
+          </div>
+      </div>
+
       <div class="overlay"></div>
+      
+      <!-- <script src="star-rating/lib/jquery-1.4.4.min.js"></script> -->
+      <script src="star-rating/lib/raphael-min.js"></script>
+      <script src="star-rating/src/compiled/jquery.ratemate.js"></script>
+      <script>
+          $(function () {
+            $('input').ratemate();
+          });
+      </script>
+
     </body>
 </html>
