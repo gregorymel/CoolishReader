@@ -284,16 +284,16 @@
                     var pageX = $h.isEmpty(e.pageX) ? e.originalEvent.touches[0].pageX : e.pageX;
                     return pageX - self.$rating.offset().left;
                 },
-                // _listenClick: function (e, callback) {
-                //     e.stopPropagation();
-                //     e.preventDefault();
-                //     if (e.handled !== true) {
-                //         callback(e);
-                //         e.handled = true;
-                //     } else {
-                //         return false;
-                //     }
-                // },
+                _listenClick: function (e, callback) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (e.handled !== true) {
+                        callback(e);
+                        e.handled = true;
+                    } else {
+                        return false;
+                    }
+                },
                 _noMouseAction: function (e) {
                     return !self.hoverEnabled || self.inactive || (e && e.isDefaultPrevented());
                 },

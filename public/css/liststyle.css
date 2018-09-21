@@ -1,0 +1,12 @@
+.list {
+    font-family: arial;
+    margin: 0px;
+    padding: 10px 0 0;
+}
+
+.list > li {
+    display: block;
+    background-color: #cccccc;
+    padding: 10px;
+    box-shadow: inset 0 3px 0 #fff;
+}
