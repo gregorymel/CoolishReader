@@ -1,15 +1,14 @@
 {
   "name": "epubjs-reader",
-  "version": "0.3.0",
+  "version": "0.0.1",
   "repository": "https://github.com/futurepress/epubjs-reader",
   "description": "ePub.js Reader",
-  "main": "reader/js/reader.js",
+  "main": "server.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "start": "node tools/serve",
-    "deploy": "./node_modules/.bin/gh-pages -d reader"
+    "start": "node server.js"
   },
   "author": "fchasen@gmail.com",
   "license": "BSD-2-Clause",
