@@ -28,6 +28,8 @@
     "portfinder": "~1.0.13"
   },
   "dependencies": {
+    "colors": "~1.2.5",
+    "connect": "~3.6.6",
     "express": "^4.16.3",
     "epubjs": "latest",
     "jquery": "^3.3.1",
