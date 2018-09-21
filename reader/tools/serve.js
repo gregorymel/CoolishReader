@@ -1,7 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var serveStatic = require('serve-static');
-var morgan  = require('morgan');
+// var morgan  = require('morgan');
 var colors = require('colors');
 var	argv = require('optimist').argv;
 var	portfinder = require('portfinder');
@@ -38,7 +38,7 @@ function listen(app, port) {
   app.use(allowCrossDomain);
   //app.use(staticServer);
 
-  if(!logger) app.use(morgan('dev'))
+  // if(!logger) app.use(morgan('dev'))
 
   log('Starting up Server, serving '.yellow
     + __dirname.replace("tools", '').green
