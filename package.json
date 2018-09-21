@@ -14,7 +14,6 @@
   "license": "BSD-2-Clause",
   "devDependencies": {
     "colors": "~1.2.5",
-    "connect": "~3.6.6",
     "gh-pages": "^1.1.0",
     "grunt": "~1.0.2",
     "grunt-concat-sourcemap": "~0.4.1",
@@ -28,8 +27,9 @@
     "portfinder": "~1.0.13"
   },
   "dependencies": {
+    "morgan": "latest",
     "colors": "~1.2.5",
-    "connect": "~3.6.6",
+    "connect": "latest",
     "express": "^4.16.3",
     "epubjs": "latest",
     "jquery": "^3.3.1",
