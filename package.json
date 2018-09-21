@@ -29,7 +29,6 @@
   "dependencies": {
     "morgan": "latest",
     "colors": "~1.2.5",
-    "connect": "latest",
     "express": "^4.16.3",
     "epubjs": "latest",
     "jquery": "^3.3.1",

@@ -1,4 +1,3 @@
-var connect = require('connect');
 var http = require('http');
 var fs = require('fs');
 var serveStatic = require('serve-static');
