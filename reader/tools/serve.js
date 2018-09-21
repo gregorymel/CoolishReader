@@ -1,11 +1,11 @@
 var http = require('http');
 var fs = require('fs');
-var serveStatic = require('serve-static');
+// var serveStatic = require('serve-static');
 // var morgan  = require('morgan');
 var colors = require('colors');
-var	argv = require('optimist').argv;
+// var	argv = require('optimist').argv;
 var	portfinder = require('portfinder');
-var path = require('path');
+// var path = require('path');
 var logger, port;
 var log = console.log;
 

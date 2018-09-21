@@ -22,11 +22,11 @@
     "grunt-contrib-copy": "~1.0.0",
     "grunt-contrib-jshint": "~1.1.0",
     "grunt-contrib-uglify": "~3.3.0",
-    "grunt-contrib-watch": "^1.1.0",
-    "optimist": "~0.6.1",
-    "portfinder": "~1.0.13"
+    "grunt-contrib-watch": "^1.1.0"
   },
   "dependencies": {
+    "optimist": "~0.6.1",
+    "portfinder": "~1.0.13",
     "colors": "~1.2.5",
     "express": "^4.16.3",
     "epubjs": "latest",
